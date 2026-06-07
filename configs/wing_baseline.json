@@ -1,0 +1,38 @@
+{
+  "aircraft": {
+    "name": "electric_uav_wing",
+    "description": "High-aspect-ratio flexible electric UAV wing baseline for composite aeroelastic tailoring",
+    "cruise_speed_mps": 40.0,
+    "rho_kgm3": 1.225,
+    "weight_total_N": 900.0
+  },
+  "wing": {
+    "span_m": 6.0,
+    "area_m2": 2.4,
+    "root_chord_m": 0.55,
+    "tip_chord_m": 0.33,
+    "sweep_LE_deg": 0.0,
+    "dihedral_deg": 3.0,
+    "root_twist_deg": 0.0,
+    "tip_twist_deg": -2.0,
+    "airfoil": "NACA4412",
+    "elastic_axis_xc": 0.35,
+    "aero_center_xc": 0.25,
+    "num_spanwise_stations": 21,
+    "oas_num_chordwise_points": 5,
+    "oas_num_spanwise_points": 21,
+    "avl_num_chordwise_panels": 8,
+    "avl_num_spanwise_panels": 20,
+    "avl_chord_spacing": 1.0,
+    "avl_span_spacing": 1.0
+  },
+  "composite_material": {
+    "name": "carbon_epoxy_generic",
+    "density_kgm3": 1550.0,
+    "E1_Pa": 135000000000.0,
+    "E2_Pa": 10000000000.0,
+    "G12_Pa": 5000000000.0,
+    "nu12": 0.3,
+    "ply_thickness_m": 0.000125
+  }
+}
