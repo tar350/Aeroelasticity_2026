@@ -1,0 +1,9 @@
+case_id,alpha_deg,target_outputs
+alpha_m4p0,-4,"CL, CDi, CM, spanwise strip forces"
+alpha_m2p0,-2,"CL, CDi, CM, spanwise strip forces"
+alpha_p0p0,0,"CL, CDi, CM, spanwise strip forces"
+alpha_p2p0,2,"CL, CDi, CM, spanwise strip forces"
+alpha_p4p0,4,"CL, CDi, CM, spanwise strip forces"
+alpha_p6p0,6,"CL, CDi, CM, spanwise strip forces"
+alpha_p8p0,8,"CL, CDi, CM, spanwise strip forces"
+alpha_p10p0,10,"CL, CDi, CM, spanwise strip forces"

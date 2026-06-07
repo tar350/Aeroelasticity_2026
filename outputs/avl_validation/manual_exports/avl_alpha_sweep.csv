@@ -1,0 +1,10 @@
+alpha_deg,CL,CDi,CM,source_file
+-4.0,-0.05165,0.0001501,-0.12038,alpha_m4_total_forces.txt
+-2.0,0.15053,0.0005282,-0.10796,alpha_m2_total_forces.txt
+0.0,0.35264,0.0026672,-0.09709,alpha_p0_total_forces.txt
+2.0,0.55425,0.0065671,-0.08784,alpha_p2_total_forces.txt
+4.0,0.75494,0.0122066,-0.08023,alpha4_total_forces.txt
+4.0,0.75494,0.0122066,-0.08023,alpha_p4_total_forces.txt
+6.0,0.95428,0.019543,-0.07432,alpha_p6_total_forces.txt
+8.0,1.15185,0.0285129,-0.07013,alpha_p8_total_forces.txt
+10.0,1.34723,0.0390326,-0.06769,alpha_p10_total_forces.txt

@@ -1,0 +1,32 @@
+electric_uav_wing
+# Mach
+0.0
+# IYsym   IZsym   Zsym
+0 0 0.0
+# Sref    Cref    Bref
+2.400000 0.449167 6.000000
+# Xref    Yref    Zref
+0.137500 0.000000 0.000000
+# CDp
+0.0
+
+SURFACE
+Wing
+# Nchord  Cspace  Nspan  Sspace
+8 1.000 20 1.000
+YDUPLICATE
+0.0
+ANGLE
+0.0
+
+SECTION
+# Xle     Yle     Zle     Chord   Ainc
+0.000000 0.000000 0.000000 0.550000 0.000000
+NACA
+4412
+
+SECTION
+# Xle     Yle     Zle     Chord   Ainc
+0.000000 3.000000 0.157223 0.330000 -2.000000
+NACA
+4412

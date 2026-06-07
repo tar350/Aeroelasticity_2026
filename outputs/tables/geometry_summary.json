@@ -18,8 +18,8 @@
     3
   ],
   "outputs": {
-    "avl": "outputs\\avl\\electric_uav_wing.avl",
-    "oas_mesh": "outputs\\oas_mesh\\electric_uav_wing_mesh.npy",
-    "matlab_spanwise_csv": "outputs\\matlab\\spanwise_stations.csv"
+    "avl": "outputs/avl/electric_uav_wing.avl",
+    "oas_mesh": "outputs/oas_mesh/electric_uav_wing_mesh.npy",
+    "matlab_spanwise_csv": "outputs/matlab/spanwise_stations.csv"
   }
 }

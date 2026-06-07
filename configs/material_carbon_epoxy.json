@@ -1,0 +1,20 @@
+{
+  "name": "generic_carbon_epoxy_ud_ply",
+  "description": "Generic unidirectional carbon/epoxy lamina properties for preliminary CLT trade studies. Replace with datasheet values for final reporting.",
+  "units": {
+    "modulus": "Pa",
+    "density": "kg/m^3",
+    "thickness": "m"
+  },
+  "E1": 135000000000.0,
+  "E2": 10000000000.0,
+  "G12": 5000000000.0,
+  "nu12": 0.30,
+  "rho": 1550.0,
+  "ply_thickness": 0.000125,
+  "Xt": 1500000000.0,
+  "Xc": 1200000000.0,
+  "Yt": 40000000.0,
+  "Yc": 246000000.0,
+  "S": 68000000.0
+}

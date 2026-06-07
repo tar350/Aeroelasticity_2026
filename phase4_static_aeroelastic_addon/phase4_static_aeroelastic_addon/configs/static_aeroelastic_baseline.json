@@ -1,0 +1,14 @@
+{
+  "description": "Phase 4 first-order static aeroelastic response configuration.",
+  "aircraft_weight_N": 900.0,
+  "load_factor": 1.0,
+  "rho_kg_m3": 1.225,
+  "airspeed_mps": 40.0,
+  "load_distribution": "elliptic",
+  "aero_center_xc": 0.25,
+  "elastic_axis_xc": 0.35,
+  "positive_twist_definition": "positive theta increases local angle of attack: wash-in",
+  "coupling_twist_sign": -1.0,
+  "coupling_sign_note": "For this preliminary model, positive Kbt_indicator with coupling_twist_sign=-1 produces washout under upward bending. Flip to +1 to test opposite convention.",
+  "minimum_stiffness_floor": 1.0e-9
+}

@@ -1,0 +1,25 @@
+{
+  "name": "electric_uav_wing",
+  "span_m": 6.0,
+  "half_span_m": 3.0,
+  "area_m2": 2.4,
+  "aspect_ratio": 15.0,
+  "taper_ratio": 0.6,
+  "root_chord_m": 0.55,
+  "tip_chord_m": 0.33,
+  "MAC_approx_m": 0.44916666666666666,
+  "elastic_axis_xc": 0.35,
+  "aero_center_xc": 0.25,
+  "ac_minus_ea_at_root_m": -0.05499999999999999,
+  "ac_minus_ea_at_tip_m": -0.03299999999999999,
+  "oas_mesh_shape": [
+    5,
+    21,
+    3
+  ],
+  "outputs": {
+    "avl": "outputs/avl/electric_uav_wing.avl",
+    "oas_mesh": "outputs/oas_mesh/electric_uav_wing_mesh.npy",
+    "matlab_spanwise_csv": "outputs/matlab/spanwise_stations.csv"
+  }
+}

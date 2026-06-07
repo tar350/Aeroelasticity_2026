@@ -1,28 +1,4 @@
-﻿# Python
-__pycache__/
-*.pyc
-.venv/
-venv/
-.env
 
-# MATLAB
-*.asv
-*.m~
-slprj/
-*.mlx.autosave
-
-# OpenAeroStruct / OpenMDAO
-*.sql
-*.out
-*.db
-reports/
-
-# Large/generated data
-*.npz
-*.mat
-
-# OS / IDE
-.DS_Store
-Thumbs.db
-.vscode/
-.idea/
+# Local executables
+avl352.exe
+*.exe
