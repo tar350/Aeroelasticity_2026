@@ -9,7 +9,8 @@ if ~isfile(summaryFile)
     error('Missing summary file. Run run_static_aeroelastic_with_avl_spanload.m first.');
 end
 
-T = readtable(summaryFile);
+opts = detectImportOptions(summaryFile, 'FileType', 'text', 'Delimiter', ',');
+T = readtable(summaryFile, opts);
 
 figure;
 bar(categorical(T.layup_name), T.TipDeflection_mm);

@@ -1,0 +1,2 @@
+alpha_deg,velocity_mps,CL_raw,CL0_calibration,CL_calibrated,CD_raw,mesh_file
+4.0,40.0,0.37067932564447437,0.384,0.7546793256444744,0.0031919182398311707,outputs\oas_baseline\oas_half_wing_mesh.npy
