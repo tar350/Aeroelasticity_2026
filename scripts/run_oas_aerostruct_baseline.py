@@ -1,0 +1,298 @@
+"""
+Phase 10: OpenAeroStruct aerostructural baseline.
+
+This is a coupled OAS smoke test using an isotropic-equivalent tube FEM.
+It is not yet the final composite wingbox model.
+
+Run from project root:
+    python scripts/run_oas_aerostruct_baseline.py
+"""
+
+from pathlib import Path
+import json
+import csv
+import numpy as np
+
+import openmdao.api as om
+from openaerostruct.integration.aerostruct_groups import AerostructGeometry, AerostructPoint
+
+
+PROJECT_ROOT = Path(__file__).resolve().parents[1]
+
+
+def build_tapered_half_mesh(span, root_chord, tip_chord, num_x, num_y):
+    half_span = span / 2.0
+    eta = np.linspace(0.0, 1.0, num_y)
+    y = eta * half_span
+    chord = root_chord + (tip_chord - root_chord) * eta
+
+    mesh = np.zeros((num_x, num_y, 3))
+    xsi = np.linspace(0.0, 1.0, num_x)
+
+    for j in range(num_y):
+        for i in range(num_x):
+            mesh[i, j, 0] = xsi[i] * chord[j]
+            mesh[i, j, 1] = y[j]
+            mesh[i, j, 2] = 0.0
+
+    return mesh
+
+
+def safe_get(prob, name):
+    try:
+        return prob.get_val(name)
+    except Exception:
+        return None
+
+
+def main():
+    cfg = json.loads((PROJECT_ROOT / "configs" / "oas_aerostruct_baseline.json").read_text())
+    mat = cfg["tube_material"]
+
+    mesh = build_tapered_half_mesh(
+        span=cfg["span_m"],
+        root_chord=cfg["root_chord_m"],
+        tip_chord=cfg["tip_chord_m"],
+        num_x=cfg["num_x"],
+        num_y=cfg["num_y"],
+    )
+
+    n_cp = 3
+    thickness_cp = np.ones(n_cp) * cfg["tube_thickness_m"]
+
+    surface = {
+        "name": "wing",
+        "symmetry": cfg["symmetry"],
+        "S_ref_type": cfg["S_ref_type"],
+        "mesh": mesh,
+        "CL0": 0.0,
+        "CD0": cfg["CD0"],
+        "with_viscous": cfg["with_viscous"],
+        "with_wave": cfg["with_wave"],
+        "k_lam": 0.05,
+        "t_over_c_cp": np.array([0.12]),
+        "c_max_t": 0.30,
+        "fem_model_type": "tube",
+        "thickness_cp": thickness_cp,
+        "twist_cp": np.zeros(3),
+        "E": mat["E_Pa"],
+        "G": mat["G_Pa"],
+        "yield": mat["yield_Pa"] / mat["safety_factor"],
+        "mrho": mat["density_kgm3"],
+        "fem_origin": 0.35,
+        "wing_weight_ratio": 1.0,
+        "struct_weight_relief": False,
+        "distributed_fuel_weight": False,
+        "exact_failure_constraint": False,
+    }
+
+    print("DEBUG: Running Phase 10 OAS aerostructural baseline")
+    print(f"DEBUG: tube thickness_cp = {thickness_cp}")
+    print(f"DEBUG: CL0 calibration used only in reporting = {cfg['CL0_calibration']}")
+
+    prob = om.Problem()
+
+    indep = om.IndepVarComp()
+    indep.add_output("v", val=cfg["velocity_mps"], units="m/s")
+    indep.add_output("alpha", val=cfg["alpha_deg"], units="deg")
+    indep.add_output("Mach_number", val=cfg["mach"])
+    indep.add_output("re", val=cfg["re_per_m"], units="1/m")
+    indep.add_output("rho", val=cfg["rho_kgm3"], units="kg/m**3")
+    indep.add_output("CT", val=0.0, units="1/s")
+    indep.add_output("R", val=1.0e6, units="m")
+    indep.add_output("W0", val=cfg["W0_N"] / 9.80665, units="kg")
+    indep.add_output("speed_of_sound", val=cfg["speed_of_sound_mps"], units="m/s")
+    indep.add_output("load_factor", val=cfg["load_factor"])
+    indep.add_output("empty_cg", val=np.array(cfg["empty_cg_m"]), units="m")
+
+    prob.model.add_subsystem("flight_vars", indep, promotes=["*"])
+    prob.model.add_subsystem("wing", AerostructGeometry(surface=surface))
+
+    point_name = "AS_point_0"
+    prob.model.add_subsystem(
+        point_name,
+        AerostructPoint(surfaces=[surface]),
+        promotes_inputs=[
+            "v",
+            "alpha",
+            "Mach_number",
+            "re",
+            "rho",
+            "CT",
+            "R",
+            "W0",
+            "speed_of_sound",
+            "empty_cg",
+            "load_factor",
+        ],
+    )
+
+    prob.model.connect("wing.local_stiff_transformed", point_name + ".coupled.wing.local_stiff_transformed")
+    prob.model.connect("wing.nodes", point_name + ".coupled.wing.nodes")
+    prob.model.connect("wing.mesh", point_name + ".coupled.wing.mesh")
+    # Tube structural performance connections
+    prob.model.connect("wing.radius", point_name + ".wing_perf.radius")
+    prob.model.connect("wing.thickness", point_name + ".wing_perf.thickness")
+    prob.model.connect("wing.nodes", point_name + ".wing_perf.nodes")
+    prob.model.connect("wing.t_over_c", point_name + ".wing_perf.t_over_c")
+
+    # Total aircraft performance connections
+    prob.model.connect("wing.structural_mass", point_name + ".total_perf.wing_structural_mass")
+    prob.model.connect("wing.cg_location", point_name + ".total_perf.wing_cg_location")
+
+    prob.setup()
+    prob.run_model()
+
+    # Debug structural displacement outputs
+    disp_candidates = [
+        point_name + ".coupled.wing.disp",
+        point_name + ".coupled.wing.struct_states.disp",
+        point_name + ".coupled.wing.def_mesh",
+        point_name + ".coupled.wing.loads",
+        point_name + ".coupled.wing.struct_states.loads",
+        point_name + ".coupled.wing.aero_states.wing_def_mesh",
+    ]
+
+    print("\nDEBUG displacement/output candidates:")
+    for cand in disp_candidates:
+        val = safe_get(prob, cand)
+        if val is None:
+            print(f"{cand}: not found")
+        else:
+            arr = np.asarray(val)
+            print(f"{cand}: shape={arr.shape}, min={np.min(arr):.6e}, max={np.max(arr):.6e}")
+
+
+    CL_raw_arr = safe_get(prob, point_name + ".wing_perf.CL")
+    CD_arr = safe_get(prob, point_name + ".wing_perf.CD")
+    CL_raw = float(np.ravel(CL_raw_arr)[0]) if CL_raw_arr is not None else np.nan
+    CD = float(np.ravel(CD_arr)[0]) if CD_arr is not None else np.nan
+    CL_calibrated = CL_raw + cfg["CL0_calibration"]
+
+    structural_mass_arr = safe_get(prob, "wing.structural_mass")
+    if structural_mass_arr is None:
+        structural_mass_arr = safe_get(prob, point_name + ".wing_perf.structural_mass")
+    structural_mass_kg = float(np.ravel(structural_mass_arr)[0]) if structural_mass_arr is not None else np.nan
+
+    def_mesh = safe_get(prob, point_name + ".coupled.wing.def_mesh")
+    if def_mesh is not None:
+        def_mesh = np.asarray(def_mesh)
+        tip_z_def = float(np.mean(def_mesh[:, -1, 2]))
+        tip_z_undef = float(np.mean(mesh[:, -1, 2]))
+        tip_deflection_m = tip_z_def - tip_z_undef
+    else:
+        tip_deflection_m = np.nan
+
+    # Correct OAS deflection extraction from structural displacement.
+    disp_for_save = safe_get(prob, point_name + ".coupled.wing.disp")
+    if disp_for_save is None:
+        disp_for_save = safe_get(prob, point_name + ".coupled.wing.struct_states.disp")
+
+    if disp_for_save is not None:
+        disp_arr = np.asarray(disp_for_save)
+
+        # z-translation is column 2. Use max absolute spanwise z-displacement.
+        z_disp = disp_arr[:, 2]
+        max_idx = int(np.argmax(np.abs(z_disp)))
+
+        tip_deflection_m = float(z_disp[max_idx])
+        tip_deflection_abs_m = float(np.max(np.abs(z_disp)))
+        max_abs_z_deflection_m = tip_deflection_abs_m
+    else:
+        tip_deflection_m = np.nan
+        tip_deflection_abs_m = np.nan
+        max_abs_z_deflection_m = np.nan
+
+    failure_arr = safe_get(prob, point_name + ".wing_perf.failure")
+    failure_value = float(np.ravel(failure_arr)[0]) if failure_arr is not None else np.nan
+
+    # Extract structural displacement from OAS beam state.
+    # disp shape: (num_spanwise_nodes, 6)
+    # columns 0,1,2 are x,y,z translations; columns 3,4,5 are rotations.
+    disp_for_save = safe_get(prob, f"{point_name}.coupled.{name}.disp")
+    if disp_for_save is None:
+        disp_for_save = safe_get(prob, f"{point_name}.coupled.{name}.struct_states.disp")
+
+    if disp_for_save is not None:
+        disp_arr = np.asarray(disp_for_save)
+        tip_deflection_m = float(disp_arr[-1, 2])
+        tip_deflection_abs_m = abs(tip_deflection_m)
+        max_abs_z_deflection_m = float(np.max(np.abs(disp_arr[:, 2])))
+    else:
+        tip_deflection_abs_m = abs(tip_deflection_m) if not np.isnan(tip_deflection_m) else np.nan
+        max_abs_z_deflection_m = tip_deflection_abs_m
+
+    # FORCE FIX: Extract actual OAS structural beam displacement.
+    # disp shape = (spanwise_nodes, 6)
+    # columns 0,1,2 are x,y,z translations; columns 3,4,5 are rotations.
+    disp_for_save = safe_get(prob, f"{point_name}.coupled.{name}.disp")
+    if disp_for_save is None:
+        disp_for_save = safe_get(prob, f"{point_name}.coupled.{name}.struct_states.disp")
+
+    if disp_for_save is not None:
+        disp_arr = np.asarray(disp_for_save)
+        tip_deflection_m = float(disp_arr[-1, 2])
+        tip_deflection_abs_m = abs(tip_deflection_m)
+        max_abs_z_deflection_m = float(np.max(np.abs(disp_arr[:, 2])))
+    else:
+        tip_deflection_abs_m = abs(tip_deflection_m) if not np.isnan(tip_deflection_m) else np.nan
+        max_abs_z_deflection_m = tip_deflection_abs_m
+
+    out_dir = PROJECT_ROOT / "outputs" / "oas_aerostruct_baseline"
+    out_dir.mkdir(parents=True, exist_ok=True)
+    np.save(out_dir / "oas_aerostruct_def_mesh.npy", np.asarray(def_mesh) if def_mesh is not None else np.array([]))
+    np.save(out_dir / "oas_aerostruct_undef_mesh.npy", mesh)
+    np.save(out_dir / "oas_aerostruct_disp.npy", np.asarray(disp_for_save) if disp_for_save is not None else np.array([]))
+    np.save(out_dir / "oas_aerostruct_disp.npy", np.asarray(disp_for_save) if disp_for_save is not None else np.array([]))
+
+    summary_file = out_dir / "oas_aerostruct_baseline_summary.csv"
+    with summary_file.open("w", newline="") as f:
+        writer = csv.DictWriter(
+            f,
+            fieldnames=[
+                "alpha_deg",
+                "velocity_mps",
+                "CL_raw",
+                "CL0_calibration",
+                "CL_calibrated",
+                "CD",
+                "structural_mass_kg",
+                "tip_deflection_m",
+                "tip_deflection_mm",
+                "tip_deflection_abs_mm",
+                "max_abs_z_deflection_mm",
+                "failure_metric",
+                "tube_thickness_m",
+            ],
+        )
+        writer.writeheader()
+        writer.writerow({
+            "alpha_deg": cfg["alpha_deg"],
+            "velocity_mps": cfg["velocity_mps"],
+            "CL_raw": CL_raw,
+            "CL0_calibration": cfg["CL0_calibration"],
+            "CL_calibrated": CL_calibrated,
+            "CD": CD,
+            "structural_mass_kg": structural_mass_kg,
+            "tip_deflection_m": tip_deflection_m,
+            "tip_deflection_mm": tip_deflection_m * 1000.0,
+            "tip_deflection_abs_mm": tip_deflection_abs_m * 1000.0,
+            "max_abs_z_deflection_mm": max_abs_z_deflection_m * 1000.0,
+            "failure_metric": failure_value,
+            "tube_thickness_m": cfg["tube_thickness_m"],
+        })
+
+    print("\nOpenAeroStruct aerostructural baseline complete.")
+    print(f"Raw OAS CL         = {CL_raw:.6f}")
+    print(f"Calibrated OAS CL  = {CL_calibrated:.6f}")
+    print(f"OAS CD             = {CD:.6f}")
+    print(f"Structural mass    = {structural_mass_kg:.6f} kg")
+    print(f"Tip deflection z   = {tip_deflection_m*1000.0:.6f} mm")
+    print(f"Tip deflection abs = {tip_deflection_abs_m*1000.0:.6f} mm")
+    print(f"Max |z deflection| = {max_abs_z_deflection_m*1000.0:.6f} mm")
+    print(f"Failure metric     = {failure_value:.6f}")
+    print(f"Wrote {summary_file}")
+
+
+if __name__ == "__main__":
+    main()

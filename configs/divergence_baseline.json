@@ -1,0 +1,10 @@
+{
+  "rho_kgm3": 1.225,
+  "cl_alpha_per_rad": 6.283185307179586,
+  "aerodynamic_center_xc": 0.25,
+  "elastic_axis_xc": 0.35,
+  "use_absolute_moment_arm": true,
+  "safety_factor_vs_cruise": 1.5,
+  "cruise_speed_mps": 40.0,
+  "minimum_valid_qdiv_pa": 1.0
+}

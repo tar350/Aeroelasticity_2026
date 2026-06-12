@@ -1,0 +1,24 @@
+﻿# Python
+.venv/
+__pycache__/
+*.pyc
+
+# MATLAB temporary files
+*.asv
+
+# Local executables
+*.exe
+avl352.exe
+
+# OpenMDAO / OAS generated files
+*.sqlite
+*.html
+*.out
+
+# Large/local cache folders
+.pytest_cache/
+.mypy_cache/
+
+# OS files
+.DS_Store
+Thumbs.db

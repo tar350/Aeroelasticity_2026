@@ -1,0 +1,54 @@
+LOAD outputs/avl/electric_uav_wing.avl
+OPER
+M
+V 40.0
+
+# Case alpha_m4p0
+A A -4
+X
+ST outputs/avl_validation/alpha_m4p0_stability.txt
+FS outputs/avl_validation/alpha_m4p0_strip_forces.txt
+
+# Case alpha_m2p0
+A A -2
+X
+ST outputs/avl_validation/alpha_m2p0_stability.txt
+FS outputs/avl_validation/alpha_m2p0_strip_forces.txt
+
+# Case alpha_p0p0
+A A 0
+X
+ST outputs/avl_validation/alpha_p0p0_stability.txt
+FS outputs/avl_validation/alpha_p0p0_strip_forces.txt
+
+# Case alpha_p2p0
+A A 2
+X
+ST outputs/avl_validation/alpha_p2p0_stability.txt
+FS outputs/avl_validation/alpha_p2p0_strip_forces.txt
+
+# Case alpha_p4p0
+A A 4
+X
+ST outputs/avl_validation/alpha_p4p0_stability.txt
+FS outputs/avl_validation/alpha_p4p0_strip_forces.txt
+
+# Case alpha_p6p0
+A A 6
+X
+ST outputs/avl_validation/alpha_p6p0_stability.txt
+FS outputs/avl_validation/alpha_p6p0_strip_forces.txt
+
+# Case alpha_p8p0
+A A 8
+X
+ST outputs/avl_validation/alpha_p8p0_stability.txt
+FS outputs/avl_validation/alpha_p8p0_strip_forces.txt
+
+# Case alpha_p10p0
+A A 10
+X
+ST outputs/avl_validation/alpha_p10p0_stability.txt
+FS outputs/avl_validation/alpha_p10p0_strip_forces.txt
+
+QUIT

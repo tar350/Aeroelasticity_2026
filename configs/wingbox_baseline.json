@@ -1,0 +1,19 @@
+{
+  "name": "baseline_rectangular_composite_wingbox",
+  "description": "Simplified closed rectangular wingbox model for preliminary EI, GJ, and bend-twist coupling trends.",
+  "half_span_m": 3.0,
+  "root_chord_m": 0.55,
+  "tip_chord_m": 0.33,
+  "front_spar_xc": 0.18,
+  "rear_spar_xc": 0.65,
+  "height_to_chord_ratio": 0.12,
+  "num_spanwise_stations": 21,
+  "skin_laminate_scale": 1.0,
+  "spar_web_laminate_scale": 1.0,
+  "notes": [
+    "This is a first-order wingbox stiffness model, not a certification-grade section solver.",
+    "All panels initially use the same laminate from the layup sweep.",
+    "Top/bottom skins dominate bending EI; closed box geometry dominates torsional GJ.",
+    "D16/D11 is used as a preliminary laminate-level bend-twist indicator until a full anisotropic wingbox stiffness extraction is added."
+  ]
+}

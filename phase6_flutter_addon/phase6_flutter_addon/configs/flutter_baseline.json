@@ -1,0 +1,32 @@
+{
+  "description": "Reduced-order flutter screening configuration. This is a comparative early-design estimate, not certification-grade flutter analysis.",
+  "flight_condition": {
+    "rho_kgm3": 1.225,
+    "cruise_speed_mps": 40.0,
+    "max_speed_factor_on_divergence": 0.95
+  },
+  "wing": {
+    "half_span_m": 3.0,
+    "root_chord_m": 0.55,
+    "tip_chord_m": 0.33,
+    "reference_chord_m": 0.44
+  },
+  "typical_section": {
+    "elastic_axis_xc": 0.35,
+    "cg_xc": 0.40,
+    "radius_of_gyration_chord_fraction": 0.35,
+    "structural_damping_ratio": 0.015
+  },
+  "screening_model": {
+    "beta1_cantilever_bending": 1.87510407,
+    "torsion_mode_factor_fixed_free": 1.57079633,
+    "base_flutter_fraction_of_divergence": 0.62,
+    "frequency_separation_reference": 2.5,
+    "max_frequency_factor": 1.25,
+    "min_frequency_factor": 0.65,
+    "washout_bonus_max": 0.12,
+    "washin_penalty": 0.10,
+    "deflection_penalty_reference_mm": 100.0,
+    "deflection_penalty_max": 0.18
+  }
+}

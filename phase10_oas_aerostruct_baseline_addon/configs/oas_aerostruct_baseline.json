@@ -1,0 +1,35 @@
+{
+  "name": "electric_uav_wing_oas_aerostruct_baseline",
+  "span_m": 6.0,
+  "root_chord_m": 0.55,
+  "tip_chord_m": 0.33,
+  "num_x": 3,
+  "num_y": 21,
+  "symmetry": true,
+  "velocity_mps": 40.0,
+  "alpha_deg": 4.0,
+  "rho_kgm3": 1.225,
+  "mach": 0.1176,
+  "speed_of_sound_mps": 340.0,
+  "re_per_m": 1000000.0,
+  "empty_cg_m": [
+    0.0,
+    0.0,
+    0.0
+  ],
+  "W0_N": 900.0,
+  "load_factor": 1.0,
+  "S_ref_type": "projected",
+  "with_viscous": false,
+  "with_wave": false,
+  "CL0_calibration": 0.384,
+  "CD0": 0.0,
+  "tube_thickness_m": 0.006,
+  "tube_material": {
+    "E_Pa": 70000000000.0,
+    "G_Pa": 27000000000.0,
+    "yield_Pa": 300000000.0,
+    "density_kgm3": 1600.0,
+    "safety_factor": 1.5
+  }
+}

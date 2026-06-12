@@ -1,0 +1,23 @@
+{
+  "aircraft_name": "electric_uav_wing",
+  "avl_geometry_file": "outputs/avl/electric_uav_wing.avl",
+  "reference_spanwise_stations_csv": "outputs/matlab/spanwise_stations.csv",
+  "manual_avl_export_csv": "outputs/avl_validation/manual_exports/avl_spanload_alpha4.csv",
+  "rho_kgm3": 1.225,
+  "velocity_mps": 40.0,
+  "alpha_sweep_deg": [
+    -4,
+    -2,
+    0,
+    2,
+    4,
+    6,
+    8,
+    10
+  ],
+  "reference_alpha_for_spanload_deg": 4.0,
+  "half_span_m": 3.0,
+  "wing_area_m2": 2.4,
+  "full_span_m": 6.0,
+  "notes": "Phase 7 validates rigid-wing aerodynamic loading from AVL against the earlier elliptic-load assumption. AVL execution is manual-friendly because AVL builds/commands can differ by installation."
+}

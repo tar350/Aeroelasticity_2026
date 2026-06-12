@@ -1,0 +1,11 @@
+{
+  "avl_spanload_csv": "outputs/avl_validation/manual_exports/avl_spanload_alpha4.csv",
+  "wingbox_summary_csv": "outputs/matlab/wingbox/wingbox_stiffness_summary.csv",
+  "spanwise_station_count": 101,
+  "half_span_m": 3.0,
+  "reference_velocity_mps": 40.0,
+  "rho_kgm3": 1.225,
+  "coupling_twist_sign": -1.0,
+  "coupling_scale": 1.0,
+  "twist_sign_convention": "positive = wash-in, negative = washout"
+}

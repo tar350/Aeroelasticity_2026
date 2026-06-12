@@ -1,0 +1,22 @@
+{
+  "name": "electric_uav_wing_oas_baseline",
+  "span_m": 6.0,
+  "root_chord_m": 0.55,
+  "tip_chord_m": 0.33,
+  "num_x": 3,
+  "num_y": 21,
+  "symmetry": true,
+  "velocity_mps": 40.0,
+  "alpha_deg": 4.0,
+  "rho_kgm3": 1.225,
+  "mach": 0.0,
+  "re_per_m": 1000000.0,
+  "cg_m": [
+    0.0,
+    0.0,
+    0.0
+  ],
+  "S_ref_type": "projected",
+  "with_viscous": false,
+  "with_wave": false
+}
