@@ -191,11 +191,23 @@ def create_layup_figure(angles, ply_thickness_mm=0.125, title="Composite Layup S
 
 
 def clean_numeric_columns(df):
+    """
+    Convert columns to numeric only when conversion is meaningful.
+    Keeps text columns like Name and Layup unchanged.
+    """
     if df is None:
         return None
+
     out = df.copy()
+
     for c in out.columns:
-        out[c] = pd.to_numeric(out[c], errors="ignore")
+        converted = pd.to_numeric(out[c], errors="coerce")
+
+        # Only replace the column if at least one value converted successfully.
+        # This avoids turning text columns like layup strings into all-NaN columns.
+        if converted.notna().sum() > 0:
+            out[c] = converted
+
     return out
 
 
