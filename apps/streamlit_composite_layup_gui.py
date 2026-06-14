@@ -248,6 +248,7 @@ avl_static_df = clean_numeric_columns(read_csv_safe("outputs/matlab/static_aeroe
 avl_validation_df = clean_numeric_columns(read_csv_safe("outputs/avl_validation/avl_spanload_validation_summary.csv"))
 oas_aero_df = clean_numeric_columns(read_csv_safe("outputs/oas_baseline/oas_aero_baseline_summary.csv"))
 oas_as_df = clean_numeric_columns(read_csv_safe("outputs/oas_aerostruct_baseline/oas_aerostruct_baseline_summary.csv"))
+oas_layup_df = clean_numeric_columns(read_csv_safe("outputs/oas_layup_comparison/oas_layup_comparison_summary.csv"))
 
 
 # -----------------------------
@@ -310,13 +311,14 @@ st.sidebar.write(f"Balanced: **{is_balanced_layup(angles)}**")
 # Main tabs
 # -----------------------------
 
-tab_layup, tab_clt, tab_wingbox, tab_aeroelastic, tab_validation, tab_summary = st.tabs(
+tab_layup, tab_clt, tab_wingbox, tab_aeroelastic, tab_validation, tab_oas_layups, tab_summary = st.tabs(
     [
         "Layup visualizer",
         "CLT properties",
         "Wingbox stiffness",
         "Aeroelastic results",
         "AVL / OAS validation",
+        "OAS layup comparison",
         "Project summary",
     ]
 )
@@ -508,6 +510,170 @@ with tab_validation:
 
 
 # -----------------------------
+# Tab 6: OAS layup comparison
+# -----------------------------
+
+with tab_oas_layups:
+    st.subheader("Phase 12B ? OAS equivalent-tube layup comparison")
+
+    st.markdown(
+        """
+        This section compares the laminate candidates using an **OpenAeroStruct equivalent-tube model**.
+        The tube model is parameterized using laminate-derived effective stiffness values from the MATLAB wingbox results.
+
+        This is not yet a full composite finite-element wingbox, but it connects:
+
+        **CLT ? wingbox stiffness ? OAS aerostructural response**
+        """
+    )
+
+    if oas_layup_df is None:
+        st.warning("OAS layup comparison CSV not found. Run `python scripts/run_oas_layup_comparison.py` first.")
+    else:
+        st.dataframe(oas_layup_df, use_container_width=True)
+
+        if "status" in oas_layup_df.columns:
+            successful_oas_layups = oas_layup_df[oas_layup_df["status"].astype(str) == "success"].copy()
+        else:
+            successful_oas_layups = oas_layup_df.copy()
+
+        if successful_oas_layups.empty:
+            st.error("No successful OAS layup cases found.")
+        else:
+            deflection_col = None
+            if "tip_deflection_abs_mm" in successful_oas_layups.columns:
+                deflection_col = "tip_deflection_abs_mm"
+            elif "max_abs_z_deflection_mm" in successful_oas_layups.columns:
+                deflection_col = "max_abs_z_deflection_mm"
+            elif "tip_deflection_mm" in successful_oas_layups.columns:
+                deflection_col = "tip_deflection_mm"
+
+            metric_cols = st.columns(4)
+
+            with metric_cols[0]:
+                if deflection_col is not None:
+                    best_deflection_row = successful_oas_layups.loc[
+                        pd.to_numeric(successful_oas_layups[deflection_col], errors="coerce").idxmin()
+                    ]
+                    st.metric(
+                        "Lowest OAS deflection",
+                        f"{best_deflection_row[deflection_col]:.2f} mm",
+                        str(best_deflection_row["Name"]),
+                    )
+
+            with metric_cols[1]:
+                if "CL_calibrated" in successful_oas_layups.columns:
+                    best_cl_row = successful_oas_layups.loc[
+                        pd.to_numeric(successful_oas_layups["CL_calibrated"], errors="coerce").idxmax()
+                    ]
+                    st.metric(
+                        "Highest calibrated CL",
+                        f"{best_cl_row['CL_calibrated']:.3f}",
+                        str(best_cl_row["Name"]),
+                    )
+
+            with metric_cols[2]:
+                if "CD" in successful_oas_layups.columns:
+                    best_cd_row = successful_oas_layups.loc[
+                        pd.to_numeric(successful_oas_layups["CD"], errors="coerce").idxmin()
+                    ]
+                    st.metric(
+                        "Lowest CD",
+                        f"{best_cd_row['CD']:.5f}",
+                        str(best_cd_row["Name"]),
+                    )
+
+            with metric_cols[3]:
+                if "failure_metric" in successful_oas_layups.columns:
+                    safe_count = int((pd.to_numeric(successful_oas_layups["failure_metric"], errors="coerce") < 0).sum())
+                    st.metric("Cases passing failure check", f"{safe_count}/{len(successful_oas_layups)}")
+
+            st.markdown("### OAS equivalent-tube comparison plots")
+
+            col1, col2 = st.columns(2)
+
+            with col1:
+                if deflection_col is not None and "Name" in successful_oas_layups.columns:
+                    st.pyplot(
+                        plot_bar(
+                            successful_oas_layups,
+                            "Name",
+                            deflection_col,
+                            "OAS equivalent-tube tip deflection",
+                            "Tip deflection [mm]",
+                        )
+                    )
+
+            with col2:
+                if "failure_metric" in successful_oas_layups.columns and "Name" in successful_oas_layups.columns:
+                    st.pyplot(
+                        plot_bar(
+                            successful_oas_layups,
+                            "Name",
+                            "failure_metric",
+                            "OAS equivalent-tube failure metric",
+                            "Failure metric",
+                        )
+                    )
+
+            col3, col4 = st.columns(2)
+
+            with col3:
+                if "CL_calibrated" in successful_oas_layups.columns and "Name" in successful_oas_layups.columns:
+                    st.pyplot(
+                        plot_bar(
+                            successful_oas_layups,
+                            "Name",
+                            "CL_calibrated",
+                            "OAS calibrated lift coefficient",
+                            "CL calibrated",
+                        )
+                    )
+
+            with col4:
+                if "structural_mass_kg" in successful_oas_layups.columns and "Name" in successful_oas_layups.columns:
+                    st.pyplot(
+                        plot_bar(
+                            successful_oas_layups,
+                            "Name",
+                            "structural_mass_kg",
+                            "OAS structural mass",
+                            "Structural mass [kg]",
+                        )
+                    )
+
+            st.markdown("### Engineering interpretation")
+
+            st.info(
+                """
+                Phase 12B confirms the same trend seen in the MATLAB workflow:
+
+                - **tailored_20** gives the lowest bending deflection.
+                - **tailored_30** remains the best balanced aeroelastic-tailoring candidate.
+                - **torsion_stiff** has high torsional stiffness but excessive bending deflection.
+                - **baseline_quasi_iso** remains the reference case.
+                """
+            )
+
+            plot_dir = PROJECT_ROOT / "outputs" / "oas_layup_comparison" / "plots"
+
+            if plot_dir.exists():
+                st.markdown("### Saved Phase 12B plot files")
+
+                image_paths = [
+                    plot_dir / "oas_layup_tip_deflection.png",
+                    plot_dir / "oas_layup_failure_metric.png",
+                    plot_dir / "oas_layup_CL.png",
+                    plot_dir / "oas_layup_structural_mass.png",
+                ]
+
+                for image_path in image_paths:
+                    if image_path.exists():
+                        st.image(str(image_path), caption=image_path.name, use_container_width=True)
+
+
+
+# -----------------------------
 # Tab 6: Project summary
 # -----------------------------
 
@@ -544,9 +710,10 @@ with tab_summary:
         7. AVL spanload-based static aeroelasticity  
         8. OAS aerodynamic baseline  
         9. OAS aerostructural smoke test  
+        10. OAS equivalent-tube layup comparison  
 
         ### Next technical milestone
 
-        **Phase 12B** should connect laminate-derived stiffness/mass into the OAS aerostructural workflow.
+        **Phase 12B** now connects laminate-derived stiffness/mass into an OAS equivalent-tube layup comparison workflow.
         """
     )
